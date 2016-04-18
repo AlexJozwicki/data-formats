@@ -35,6 +35,14 @@ export class Format< T > extends AbstractFormat< Object, T > {
         super();
         this._cl = cl;
         this._mappers = mappers;
+
+        this._read = mappers.map( f => ( source, out ) => {
+            const value = f.read( source );
+            if( this.dropUndefined && value === undefined ) return;
+
+            // $FlowComputedProperty
+            out[ f.modelName ] = f.read( source );
+        } ).reduce( ( a, b ) => ( source, out ) => { a( source, out ); b( source, out ); } );
     }
 
 
@@ -49,14 +57,7 @@ export class Format< T > extends AbstractFormat< Object, T > {
         try {
             // $IgnoreFlow
             var out : T = new this._cl();
-
-            this._mappers.forEach( f => {
-                const value = f.read( source );
-                if( this.dropUndefined && value === undefined ) return;
-
-                // $FlowComputedProperty
-                out[ f.modelName ] = f.read( source );
-            } );
+            this._read( source, out );
             return out;
         }
         // a formatter should not throw exception ideally. we just firewall the thing here to stop messing up everything

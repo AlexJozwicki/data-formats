@@ -1,4 +1,4 @@
-import { Format, json, number, boolean, node } from 'kpmg-toolkit/Json';
+import { Format, json, number, boolean, node } from '../src/Json';
 
 /**
  * First, a small model, to test composites
