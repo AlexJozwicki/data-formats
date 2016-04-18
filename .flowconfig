@@ -24,6 +24,7 @@ suppress_comment= \\(.\\|\n\\)*\\$IgnoreFlow
 suppress_comment= \\(.\\|\n\\)*\\$FlowPrototypeDecl
 suppress_comment= \\(.\\|\n\\)*\\$FlowComputedProperty
 suppress_comment= \\(.\\|\n\\)*\\$FlowDynamicTypeCheckBug
+suppress_comment= \\(.\\|\n\\)*\\$FlowWTFError
 
 [version]
-0.20.1
+0.21.0

@@ -54,20 +54,24 @@ export class Format< T > extends AbstractFormat< Object, T > {
     read( source: ?Object ) : ?T {
         if( !source ) return null;
 
-        try {
+        try {
             // $IgnoreFlow
             var out : T = new this._cl();
             this._read( source, out );
             return out;
         }
         // a formatter should not throw exception ideally. we just firewall the thing here to stop messing up everything
-        catch( e ) {
+        catch( e ) {
             console.log( 'A format read completely exploded.', e );
         }
     }
 
-    validate( source: ?O ) : { then: ( o: T ) => void, catch: ( errors: Array< string > ) => void } {
 
+    validate( source: ?Object ) : { then: ( o: T ) => void, catch: ( errors: Array< string > ) => void } {
+        return {
+            then: ( o ) => {},
+            catch: ( errors ) => {}
+        }
     }
 
     /**
@@ -110,9 +114,7 @@ export class Format< T > extends AbstractFormat< Object, T > {
     write( model: ?T ) : ?Object {
         if( !model ) return null;
 
-        try {
-            // $IgnoreFlow
-
+        try {
             var out = Object.create( null );
 
             this._mappers.filter( f => !!f.write ).forEach( f => {
@@ -125,7 +127,7 @@ export class Format< T > extends AbstractFormat< Object, T > {
             return out;
         }
         // a formatter should not throw exception ideally. we just firewall the thing here to stop messing up everything
-        catch( e ) {
+        catch( e ) {
             console.log( 'A format write completely exploded.', e );
         }
     }
@@ -241,7 +243,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * @param  {string}             idField     name of the id field in the object of array
      */
     idResolver( array: Array< Object >, idField: string = 'id' ) : Mapper< F, T > {
-        return this.transform( v => _.find( array, { [ idField ]: v } ), v => v[ idField ] );
+        return this.transform( v => _.find( array, { [ idField ]: v } ), v => !!v ? v[ idField ] : null );
     }
 
     // $IgnoreFlow
@@ -324,7 +326,9 @@ export class JsonNode< T > extends JsonValue< T > {
     }
 
     is( f: AbstractFormat< T > ) : Mapper< Object, T > {
+        // $IgnoreFlow
         invariant( !!f && !!f.read && !!f.write, 'JsonNode.is should be called with a valid format' );
+        // $FlowWTFError
         return this.transform( v => f.read( v ), v => f.write( v ) );
     }
 }
