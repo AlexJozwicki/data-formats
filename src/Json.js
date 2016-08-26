@@ -22,16 +22,17 @@ export class AbstractFormat< S, D > {
  */
 export class Format< T > extends AbstractFormat< Object, T > {
     _cl             : Class< T >;
-    _mappers        : Array< Mapper > = [];
+    _mappers        : Array< Mapper< Object, any > > = [];
     dropUndefined   : boolean = true;
+    _read           : ( source: Object, out: T ) => void;
 
     /** read-only access to the mappers, we don't want them to be changed */
-    get mappers() : Array< Mapper > { return this._mappers; }
+    get mappers() : Array< Mapper< Object, any > > { return this._mappers; }
 
     /**
      * Ctor.
      */
-    constructor( cl: Class< T >, ...mappers: Array< Mapper > ) {
+    constructor( cl: Class< T >, ...mappers: Array< Mapper< Object, any > > ) {
         super();
         this._cl = cl;
         this._mappers = mappers;
@@ -41,8 +42,8 @@ export class Format< T > extends AbstractFormat< Object, T > {
             if( this.dropUndefined && value === undefined ) return;
 
             // $FlowComputedProperty
-            out[ f.modelName ] = f.read( source );
-        } ).reduce( ( a, b ) => ( source, out ) => { a( source, out ); b( source, out ); } );
+            out[ f.modelName ] = value;
+        } ).reduce( ( a, b ) => ( source, out ) => { a( source, out ); b( source, out ); } );
     }
 
 
@@ -65,7 +66,6 @@ export class Format< T > extends AbstractFormat< Object, T > {
             console.log( 'A format read completely exploded.', e );
         }
     }
-
 
     validate( source: ?Object ) : { then: ( o: T ) => void, catch: ( errors: Array< string > ) => void } {
         return {
@@ -145,7 +145,7 @@ export class Format< T > extends AbstractFormat< Object, T > {
      * @param  {Array< Mapper >]}   ...mappers      the list of mapppers to add
      * @return {Format< ET >}                       the formatter for the new class ET
      */
-    extend< ET: T >( cl: Class< ET >, ...mappers: Array< Mapper > ) : Format< ET > {
+    extend< ET: T >( cl: Class< ET >, ...mappers: Array< Mapper< any, any > > ) : Format< ET > {
         invariant( !!cl, 'Format.extend should be called with a valid class' );
         return new Format( cl, ...[ ...mappers, ...this._mappers ] );
     }
@@ -185,7 +185,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * Converts to a boolean
      */
     boolean() : Mapper< F, boolean > {
-        return this.transform( b => (b !== undefined &&  b === 'true' || b === '1' || b === 1), b => b );
+        return this.transform( b => ( b !== undefined && ( b === true || b === 'true' || b === '1' || b === 1 ) ), b => b );
     }
 
     /**
@@ -199,7 +199,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * Reads an array, using a format
      * @param  {AbstractFormat}     f   the formatter that will be used for each element of the collection
      */
-    arrayOf( f: AbstractFormat ) : Mapper< F, T > {
+    arrayOf( f: AbstractFormat< F, T > ) : Mapper< F, T > {
         return this.transform(
             a => ( Array.isArray( a ) ? a.map( e => f.read( e ) ) : void 0 ),
             a => ( Array.isArray( a ) ? a.map( e => f.write( e ) ) : void 0 )
@@ -325,10 +325,9 @@ export class JsonNode< T > extends JsonValue< T > {
         return new JsonNode( this.name, modelName, this.read, model => model[ modelName ] );
     }
 
-    is( f: AbstractFormat< T > ) : Mapper< Object, T > {
-        // $IgnoreFlow
+    is< T >( f: AbstractFormat< Object, T > ) : Mapper< Object, T > {
         invariant( !!f && !!f.read && !!f.write, 'JsonNode.is should be called with a valid format' );
-        // $FlowWTFError
+
         return this.transform( v => f.read( v ), v => f.write( v ) );
     }
 }
