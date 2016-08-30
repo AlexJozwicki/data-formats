@@ -41,7 +41,7 @@ export class Format< T > extends AbstractFormat< Object, T > {
             const value = f.read( source );
             if( this.dropUndefined && value === undefined ) return;
 
-            // $FlowComputedProperty
+            // $IgnoreFlow: FlowComputedProperty
             out[ f.modelName ] = value;
         } ).reduce( ( a, b ) => ( source, out ) => { a( source, out ); b( source, out ); } );
     }
@@ -246,8 +246,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
         return this.transform( v => _.find( array, { [ idField ]: v } ), v => !!v ? v[ idField ] : null );
     }
 
-    // $IgnoreFlow
-    transform< NT >( read: ( value: ?any ) => ?any, write: ( model: ?any ) => ?any ) : Mapper< F, NT > {
+    transform( read: ( value: ?any ) => ?any, write: ( model: ?any ) => ?any ) : Mapper< F, any > {
         return new Mapper( this.name, this.modelName, o => read( this.read( o ) ), m => write( this.write( m ) ) );
     }
 }
@@ -269,7 +268,6 @@ export class NumberMapper< F > extends Mapper< F, number > {
         return this.transform( v => v ? Math.min( v, m ) : m, v => v );
     }
 
-    // $IgnoreFlow
     transform( read: ( value: ?any ) => ?any, write: ( model: ?any ) => ?any ) : NumberMapper< F > {
         return new NumberMapper( this.name, this.modelName, other => read( this.read( other ) ), this.write );
     }
@@ -286,7 +284,7 @@ export class JsonValue< T > extends Mapper< Object, T > {
      * @param  {string} modelName   the new name for the value inside the model
      */
     to( modelName: string ) : Mapper< Object, T > {
-        // $FlowComputedProperty
+        // $IgnoreFlow computed property on object that we need to do
         return new JsonValue( this.name, modelName, this.read, model => model[ modelName ] );
     }
 
@@ -309,7 +307,7 @@ export class JsonValue< T > extends Mapper< Object, T > {
  */
 export function json< T >( strings: Array< string > ) : JsonValue< T > {
     const name : string = strings[ 0 ];
-    // $FlowComputedProperty
+    // $IgnoreFlow computed property on object that we need to do
     return new JsonValue( name, name, j => j[ name ], m => m[ name ] );
 }
 
@@ -321,7 +319,7 @@ export class JsonNode< T > extends JsonValue< T > {
     * @param  {string} modelName   the new name for the value inside the model
     */
     to( modelName: string ) : Mapper< Object, T > {
-        // $FlowComputedProperty
+        // $IgnoreFlow computed property on object that we need to do
         return new JsonNode( this.name, modelName, this.read, model => model[ modelName ] );
     }
 
@@ -334,7 +332,7 @@ export class JsonNode< T > extends JsonValue< T > {
 
 export function node< T >( strings: Array< string > ) : JsonNode< T > {
     const name : string = strings[ 0 ];
-    // $FlowComputedProperty
+    // $IgnoreFlow computed property on object that we need to do
     return new JsonNode( name, name, json => json[ name ], model => model[ name ] );
 }
 
