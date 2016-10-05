@@ -1,6 +1,6 @@
 {
   "name": "data-formats",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "description": "A data formats library, to bind your JS data model to anything else, as JSON",
   "files": [
     "*.md",

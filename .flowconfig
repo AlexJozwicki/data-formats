@@ -30,4 +30,4 @@ suppress_comment= \\(.\\|\n\\)*\\$FlowDynamicTypeCheckBug
 suppress_comment= \\(.\\|\n\\)*\\$FlowWTFError
 
 [version]
-0.29.0
+0.32.0

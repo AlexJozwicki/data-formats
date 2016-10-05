@@ -211,7 +211,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * @param  {string}     format  the format of the date
      */
     date( format: string = 'YYYY-MM-DD[T]HH:mm:ss.SSSZ' ) : Mapper< F, Moment >{
-        return this.transform( v => moment( v, format ), v => v );
+        return this.transform( v => !!v ? moment( v, format ) : void 0, v => !!v ? v.format( format ) : void 0 );
     }
 
     /**
@@ -233,7 +233,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * @param  {T}                  value   the default value
      * @return {Mapper< F, T >}
      */
-    defaultsTo( value: T ) : Mapper< F, T > {
+    defaultsTo( value: ?T ) : Mapper< F, T > {
         return this.transform( v => v || value, v => v || value );
     }
 
@@ -243,6 +243,7 @@ export class Mapper< F, T > extends SimpleMapper< F, T > {
      * @param  {string}             idField     name of the id field in the object of array
      */
     idResolver( array: Array< Object >, idField: string = 'id' ) : Mapper< F, T > {
+        // TODO: use builin find
         return this.transform( v => _.find( array, { [ idField ]: v } ), v => !!v ? v[ idField ] : null );
     }
 
@@ -310,6 +311,7 @@ export function json< T >( strings: Array< string > ) : JsonValue< T > {
     // $IgnoreFlow computed property on object that we need to do
     return new JsonValue( name, name, j => j[ name ], m => m[ name ] );
 }
+
 
 
 
